@@ -7,3 +7,5 @@
 * Launching Gazebo:  roslaunch urdf_gazebo robot.launch
 
 Create a workspace first. urdf_gazebo and urdf_rviz are the ROS Noetic packages. Make sure your terminal is properly sourced.
+
+![gazebo_drive](https://github.com/Martin-1206/URDF/assets/129275767/872b1836-0ee8-4335-bd43-cf1918cbb72a)
