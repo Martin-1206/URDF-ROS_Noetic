@@ -1,0 +1,374 @@
+<?xml version="1.0"?>
+<robot name="MartinBot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!-- Turotial: http://wiki.ros.org/urdf/Tutorials -->
+
+  <!-- including PLugin file worked only with xacro -->
+  <xacro:include filename="$(find urdf_rviz)/urdf/MartinBot_Plugins.urdf"/>  
+
+
+  <!-- defining constant values -->
+  <xacro:property name="width"   value="0.2"/>  <!-- radius of base_link -->
+  <xacro:property name="bodylen" value="0.6"/>  <!-- length of base_link -->
+  <xacro:property name="leglen"  value="0.6"/>  <!-- length of leg -->
+  <xacro:property name="baselen" value="0.4"/>  <!-- length of base -->
+  <xacro:property name="wheelrad" value="0.035"/> <!-- radius wheel -->
+  <xacro:property name="wheellen" value="0.2"/>  <!--length wheel -->
+  <xacro:property name="polelen" value="0.2"/>  <!-- length of pole -->
+  <xacro:property name="pi" value="3.1414"/>
+
+  <!-- Define Inertial with changeable mass -->
+  <xacro:macro name="default_inertial" params="mass">
+    <inertial>
+      <mass value="${mass}"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- Defining colors -->
+  <material name="blue">
+    <color rgba="0 0 1 1"/>
+  </material>
+
+  <material name="white">
+    <color rgba="1 1 1 1"/>
+  </material>
+
+  <material name="black">
+    <color rgba="0 0 0 1"/>
+  </material>
+
+  <material name="yellow">   
+    <color rgba="1 1 0 1"/>
+  </material>
+
+  <!-- This how to define a link -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <cylinder length="${bodylen}" radius="${width}"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <!-- To simulate in gazebo, a collision element must be added -->
+    <collision>
+      <geometry>
+        <cylinder length="${bodylen}" radius="${width}"/>
+      </geometry>
+    </collision>
+    <!-- To simulate properly, aslo physical properties must be defined -->
+    <xacro:default_inertial mass="10"/>  
+  </link>
+
+  <!-- Define macro for leg -->
+  <xacro:macro name="leg" params="prefix">
+    <link name="${prefix}_leg">
+      <visual>
+        <geometry>
+          <box size="${leglen} 0.1 0.2"/>
+        </geometry>
+        <material name="white"/>
+        <origin rpy="0 ${pi/2} 0" xyz="0 0 -${leglen/2}"/>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${leglen} 0.1 0.2"/>
+        </geometry>
+        <origin rpy="0 ${pi/2} 0" xyz="0 0 -${leglen/2}"/>
+      </collision>
+      <xacro:default_inertial mass="10"/>
+    </link>
+  </xacro:macro>
+
+  <!-- create right_leg -->
+  <xacro:leg prefix="right"/> 
+
+  <!-- This how to define a joint, to connect links -->
+  <joint name="base_to_right_leg" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_leg"/>
+    <origin xyz="0 -0.22 0.25"/>
+  </joint>
+
+  <!-- create left_leg -->
+  <xacro:leg prefix="left"/>
+
+  <joint name="base_to_left_leg" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_leg"/>
+    <origin xyz="0 0.22 0.25"/>
+  </joint>
+
+  <!-- Define macro for base -->
+  <xacro:macro name="base" params="prefix">
+    <link name="${prefix}_base">
+      <visual>
+        <geometry>
+          <box size="${baselen} 0.1 0.1"/>
+        </geometry>
+        <material name="white"/>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${baselen} 0.1 0.1"/>
+        </geometry>
+      </collision>
+      <xacro:default_inertial mass="10"/>
+    </link>
+  </xacro:macro>
+
+  <!-- Create right_base -->
+  <xacro:base prefix="right"/>
+
+  <joint name="right_base_joint" type="fixed">
+    <parent link="right_leg"/>
+    <child link="right_base"/>
+    <origin xyz="0 0 -0.6"/>
+  </joint>
+
+  <!-- Create left_base -->
+  <xacro:base prefix="left"/>
+
+  <joint name="left_base_joint" type="fixed">
+    <parent link="left_leg"/>
+    <child link="left_base"/>
+    <origin xyz="0 0 -0.6"/>
+  </joint>
+
+  <!-- Define xacro for wheel -->
+  <xacro:macro name="wheel" params="prefix suffix">
+    <link name="${prefix}_${suffix}_wheel">
+      <visual>
+        <geometry>
+          <cylinder length="${wheellen}" radius="${wheelrad}"/>
+        </geometry>
+        <origin rpy="${pi/2} 0 0" xyz="0 0 0"/>
+        <material name="black"/>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder length="${wheellen}" radius="${wheelrad}"/>
+        </geometry>
+        <origin rpy="${pi/2} 0 0" xyz="0 0 0"/>
+      </collision>
+      <xacro:default_inertial mass="1.0"/>
+    </link>
+  </xacro:macro>
+
+  <!-- Create right_front_wheels -->
+  <xacro:wheel prefix="right" suffix="front"/>
+
+  <joint name="right_front_wheel_joint" type="continuous">
+    <parent link="right_base"/>
+    <child link="right_front_wheel"/>
+    <axis rpy="0 0 0" xyz="0 1 0"/>
+    <origin xyz="0.15 0 -0.08"/>
+  </joint>
+
+  <!-- Create left_front_wheel -->
+  <xacro:wheel prefix="left" suffix="front"/>
+  
+  <joint name="left_front_wheel_joint" type="continuous">
+    <parent link="left_base"/>
+    <child link="left_front_wheel"/>
+    <axis rpy="0 0 0" xyz="0 1 0"/>
+    <origin xyz="0.15 0 -0.08"/>
+  </joint>
+
+  <!-- Create right_back_wheel -->
+  <xacro:wheel prefix="right" suffix="back"/>
+
+  <joint name="right_back_wheel_joint" type="continuous">
+    <parent link="right_base"/>
+    <child link="right_back_wheel"/>
+    <axis rpy="0 0 0" xyz="0 1 0"/>
+    <origin xyz="-0.15 0 -0.08"/>
+  </joint>
+
+  <!-- Create left_back_wheel -->
+  <xacro:wheel prefix="left" suffix="back"/>
+
+  <joint name="left_back_wheel_joint" type="continuous">
+    <parent link="left_base"/>
+    <child link="left_back_wheel"/>
+    <axis rpy="0 0 0" xyz="0 1 0"/>
+    <origin xyz="-0.15 0 -0.08"/>
+  </joint>
+
+  <link name="head">
+    <visual>
+      <geometry>
+        <sphere radius="${width}"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+      <material name="white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="${width}"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+    </collision>
+    <xacro:default_inertial mass="2"/>
+  </link>
+
+  <joint name="neck" type="continuous">
+    <parent link="base_link"/>
+    <child link="head"/>
+    <axis xyz="0 0 1"/>
+    <origin xyz="0 0 0.3"/>
+    <limit effort="30" velocity="1.0"/>
+  </joint>
+
+  <link name="box">
+    <visual>
+      <geometry>
+        <box size="0.08 0.08 0.08"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.08 0.08 0.08"/>
+      </geometry>
+    </collision>
+    <xacro:default_inertial mass="1.0"/>
+  </link>
+
+  <joint name="box_to_head" type="fixed">
+    <parent link="head"/>
+    <child link="box"/>
+    <origin xyz="0.15 0 0.1 "/>
+  </joint>
+
+  <link name="gripper_pole">
+    <visual>
+      <geometry>
+        <cylinder length="${polelen}" radius="0.01"/>
+      </geometry>
+      <origin rpy="0 ${pi/2} 0" xyz="0.1 0 0.0"/> 
+      <material name="white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${polelen}" radius="0.01"/>
+      </geometry>
+    </collision>
+    <xacro:default_inertial mass="0.05"/>
+  </link>    
+
+  <joint name="gripper_extension" type="prismatic">
+    <parent link="base_link"/>
+    <child link="gripper_pole"/>
+    <limit effort="1000.0" lower="-0.38" upper="0" velocity="0.5"/>
+    <origin rpy="0 0 0" xyz="0.19 0 0.2"/> 
+  </joint>
+
+  <!-- Define macro for gripper -->
+  <xacro:macro name="gripper" params="prefix reflect">
+    <link name="${prefix}_gripper">
+      <visual>
+        <origin rpy="${reflect} 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://urdf_rviz/meshes/l_finger.dae"/>
+        </geometry>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://urdf_rviz/meshes/l_finger.dae"/>
+        </geometry>
+        <origin rpy="${reflect} 0 0" xyz="0 0 0"/>
+      </collision>
+      <xacro:default_inertial mass="0.05"/>
+    </link>
+  </xacro:macro>
+
+  <!-- Create left_gripper -->
+  <xacro:gripper prefix="left" reflect="0"/>
+
+  <joint name="left_gripper_joint" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.5"/>
+    <origin rpy="0 0 0" xyz="0.2 0.01 0"/>
+    <parent link="gripper_pole"/>
+    <child link="left_gripper"/>
+  </joint>
+
+  <!-- Create right_gripper -->
+  <xacro:gripper prefix="right" reflect="${pi}"/>
+
+  <joint name="right_gripper_joint" type="revolute">
+    <axis xyz="0 0 -1"/>
+    <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.5"/>
+    <origin rpy="0 0 0" xyz="0.2 -0.01 0"/>
+    <parent link="gripper_pole"/>
+    <child link="right_gripper"/>
+  </joint>
+
+  <!-- Define macro for tip -->
+  <xacro:macro name="tip" params="prefix reflect">
+    <link name="${prefix}_tip">
+      <visual>
+        <geometry>
+          <mesh filename="package://urdf_rviz/meshes/l_finger_tip.dae"/>
+        </geometry>
+        <origin rpy="${reflect} 0 0" xyz="0.1 0 0"/> <!-- xyz="0.09137 0.00495 0"-->
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://urdf_rviz/meshes/l_finger_tip.dae"/>
+        </geometry>
+        <origin rpy="${reflect} 0 0" xyz="0.09137 0.00495 0"/>
+      </collision>
+      <xacro:default_inertial mass="0.05"/>
+    </link>
+  </xacro:macro>
+
+  <!-- Create left_tip -->
+  <xacro:tip prefix="left" reflect="0"/>
+
+  <joint name="left_tip_joint" type="fixed">
+    <parent link="left_gripper"/>
+    <child link="left_tip"/>
+  </joint>
+
+  <!-- Create right_tip -->
+  <xacro:tip prefix="right" reflect="${-pi}"/>
+
+  <joint name="right_tip_joint" type="fixed">
+    <parent link="right_gripper"/>
+    <child link="right_tip"/>
+  </joint>
+
+  <!-- Camera -->
+  <link name="camera_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.02"/>
+      </geometry>
+      <material name="yellow"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <axis xyz="0 0 0" />
+    <origin xyz="0.05 0 0" rpy="0 0 0"/>
+    <parent link="box"/>
+    <child link="camera_link"/>
+  </joint>
+
+</robot>
+
