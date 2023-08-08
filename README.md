@@ -10,7 +10,9 @@ Create a workspace first. urdf_gazebo and urdf_rviz are the ROS Noetic packages.
 
 What's included:
 * create URDF file
-* simulate in RVIZ and Gazebo
+* make it movable
+* simulate in RVIZ
+* add physical and collision properties and plugins to simulate in Gazebo
 * implement sensor like camera
 * implement colors in Gazebo
 
