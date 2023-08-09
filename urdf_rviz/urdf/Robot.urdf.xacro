@@ -4,7 +4,7 @@
 <!-- Turotial: http://wiki.ros.org/urdf/Tutorials -->
 
   <!-- including PLugin file worked only with xacro -->
-  <xacro:include filename="$(find urdf_rviz)/urdf/MartinBot_Plugins.urdf"/>  
+  <xacro:include filename="$(find urdf_rviz)/urdf/MartinBot_Plugins.urdf.xacro"/>  
 
 
   <!-- defining constant values -->
